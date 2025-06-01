@@ -5,5 +5,5 @@ New-AzResourceGroupDeployment `
     -Name "new-storage" `
     -ResourceGroupName $rg `
     -TemplateFile "01-storage.json" `
-    -storageName "armtutorialstorage01" `
+    -storageName "storage" `
     -storageSKU "Standard_LRS"

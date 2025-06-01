@@ -22,13 +22,15 @@
             ]
         }
     },
+    "variables": {
+        "storageName": "[concat(parameters('storageName'), uniqueString(resourceGroup().id))]"
+    },
     "functions": [],
-    "variables": {},
     "resources": [  
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2024-01-01",
-            "name": "[parameters('storageName')]",
+            "name": "[variables('storageName')]",
             "location": "[resourceGroup().location]",
             "kind": "StorageV2",
             "sku": {
