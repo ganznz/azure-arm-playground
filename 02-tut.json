@@ -1,16 +1,18 @@
 /*
-
-	covers arm template expressions + variables
+	covers arm template parameters
 */
 
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "storageName": {
+        "storageAccountName": {
             "type": "string",
             "minLength": 3,
-            "maxLength": 24
+            "maxLength": 24,
+            "metadata": {
+                "description": "Unique name for your storage account."
+            }
         },
         "storageSKU": {
             "type": "string",
@@ -24,23 +26,34 @@
                 "Premium_ZRS",
                 "Standard_GZRS",
                 "Standard_RAGZRS"
-            ]
+            ],
+            "metadata": {
+                "description": "Approved SKUs for deployment."
+            }
+        },
+        "stage": {
+            "type": "string",
+            "defaultValue": "Test",
+            "allowedValues": ["Test", "QA", "Dev", "Prod"],
+            "metadata": {
+                "description": "Environment stage name for deployment."
+            }
         }
     },
-    "variables": {
-        "storageName": "[concat(parameters('storageName'), uniqueString(resourceGroup().id))]"
-    },
     "functions": [],
+    "variables": {
+        "storageAccountName": "[concat(parameters('storageAccountName'), toLower(parameters('stage')))]"
+    },
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2024-01-01",
-            "name": "[variables('storageName')]",
+            "name": "[variables('storageAccountName')]",
             "location": "[resourceGroup().location]",
-            "kind": "StorageV2",
             "sku": {
                 "name": "[parameters('storageSKU')]"
-            }
+            },
+            "kind": "StorageV2"
         }
     ],
     "outputs": {}
