@@ -4,6 +4,6 @@ New-AzResourceGroup -Name $rg -Location "northeurope" -Force;
 New-AzResourceGroupDeployment `
     -Name "new-storage" `
     -ResourceGroupName $rg `
-    -TemplateFile "01-storage.json" `
+    -TemplateFile "./01-storage.json" `
     -storageName "storage" `
     -storageSKU "Standard_LRS"
