@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "value": "arm04stor2"
+        },
+        "storageSKU": {
+            "value": "Standard_LRS"
+        },
+        "blobContainerName": {
+            "value": "tutcontainer"
+        },
+        "planName": {
+            "value": "arm04storplan"
+        },
+        "webAppName": {
+            "value": "arm04storweb"
+        }
+    }
+}

@@ -1,0 +1,59 @@
+/*
+	orchestration using "dependsOn" method
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 24
+        },
+        "storageSKU": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS",
+                "Standard_ZRS",
+                "Premium_LRS",
+                "Premium_ZRS",
+                "Standard_GZRS",
+                "Standard_RAGZRS"
+            ],
+            "metadata": {
+                "description": "Approved SKUs for deployment."
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "storageAccountName": "[concat(parameters('storageAccountName'), uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2024-01-01",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "[parameters('storageSKU')]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "name": "[concat(variables('storageAccountName'), '/default/tutcontainer')]",
+            "apiVersion": "2024-01-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        }
+    ],
+    "outputs": {}
+}
