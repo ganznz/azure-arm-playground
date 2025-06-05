@@ -1,5 +1,5 @@
 /*
-	create a dynamic number of storage accounts w/ a datafactory that depends on all storage accounts deploying first
+	
 */
 
 {
@@ -16,7 +16,7 @@
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[concat('stor', uniqueString(resourceGroup().id), copyIndex('copyStorage'))]",
+            "name": "[concat('stor', uniqueString(resourceGroup().id), copyIndex('copyStorage', 1))]",
             "apiVersion": "2024-01-01",
             "location": "[resourceGroup().location]",
             "kind": "StorageV2",
@@ -27,18 +27,15 @@
                 "name": "copyStorage",
                 "count": "[parameters('storageCount')]"
             }
-        },
-        {
-            "type": "Microsoft.DataFactory/factories",
-            "apiVersion": "2018-06-01",
-            "name": "[concat('df-', uniqueString(resourceGroup().id))]",
-            "location": "[resourceGroup().location]",
-            "identity": {
-                "type": "SystemAssigned"
-            },
-            "dependsOn": ["copyStorage"],
-            "properties": {}
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "storageEndpoints": {
+            "type": "array",
+            "copy": {
+                "count": "[parameters('storageCount')]",
+                "input": "[reference(concat('stor', uniqueString(resourceGroup().id), copyIndex(1))).primaryEndpoints.blob]"
+            }
+        }
+    }
 }

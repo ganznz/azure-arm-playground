@@ -1,0 +1,50 @@
+/*
+	create a dynamic number of containers with dynamic names using "copy" in variables
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "containerCount": {
+            "type": "int",
+            "defaultValue": 3
+        }
+    },
+    "functions": [],
+    "variables": {
+        "storageName": "[concat('stor', uniqueString(resourceGroup().id))]",
+        "copy": [
+            {
+                "name": "containerNames",
+                "count": "[parameters('containerCount')]",
+                "input": "[concat(variables('storageName'), '/default/container', copyIndex('containerNames', 1))]"
+            }
+        ]
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2024-01-01",
+            "name": "[variables('storageName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2024-01-01",
+            "name": "[variables('containerNames')[copyIndex('copyContainers')]]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]"
+            ],
+            "copy": {
+                "name": "copyContainers",
+                "count": "[length(variables('containerNames'))]"
+            }
+        }
+    ],
+    "outputs": {}
+}
