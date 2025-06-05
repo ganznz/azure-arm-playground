@@ -1,0 +1,56 @@
+/*
+	deploys firewall conditionally based on param allowAzureIPs
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminLogin": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "allowAzureIPs": {
+            "type": "string",
+            "allowedValues": ["Yes", "No"]
+        }
+    },
+    "functions": [],
+    "variables": {
+        "flags": {
+            "deployFirewall": "[equals(parameters('allowAzureIPs'), 'Yes')]"
+        },
+        "serverName": "[concat('sqlserver-', uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2024-05-01-preview",
+            "name": "[variables('serverName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "administratorLogin": "[parameters('adminLogin')]",
+                "administratorLoginPassword": "[parameters('adminPassword')]"
+            },
+            "resources": [
+                {
+                    "condition": "[variables('flags').deployFirewall]",
+                    "type": "firewallRules",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+                    ],
+                    "apiVersion": "2021-11-01",
+                    "name": "AllowAllWindowsAzureIps",
+                    "location": "[resourceGroup().location]",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}
