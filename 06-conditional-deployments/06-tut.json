@@ -1,0 +1,32 @@
+/*
+	don't deploy storage acct if the name field is empty
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": ""
+        }
+    },
+    "functions": [],
+    "variables": {
+        "storageAccountName": "[if(not(empty(parameters('storageAccountName'))), parameters('storageAccountName'), 'storage')]"
+    },
+    "resources": [
+        {
+            "condition": "[not(empty(parameters('storageAccountName')))]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2024-01-01",
+            "name": "[variables('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        }
+    ],
+    "outputs": {}
+}

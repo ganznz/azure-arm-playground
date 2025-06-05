@@ -1,0 +1,69 @@
+/*
+	deploys storage acct, app service plan and app service (site)
+	-- doesn't deploy storage acct if no name provided, and therefore app service site doesn't get storage access key value
+*/
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": ""
+        }
+    },
+    "functions": [],
+    "variables": {
+        "flags": {
+            "deployStorage": "[not(empty(parameters('storageAccountName')))]"
+        },
+        "storageAccountName": "[if(variables('flags').deployStorage, parameters('storageAccountName'), 'DONT_DEPLOY')]",
+        "appServicePlanName": "[concat('appserviceplan-', uniqueString(resourceGroup().id))]",
+        "siteName": "[concat('appservice-', uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "condition": "[variables('flags').deployStorage]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2024-01-01",
+            "name": "[variables('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2024-04-01",
+            "name": "[variables('appServicePlanName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "F1"
+            },
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2024-04-01",
+            "name": "[variables('siteName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "storageAccessKey",
+                            "value": "[if(variables('flags').deployStorage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2024-01-01').keys[0].value, '')]"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
