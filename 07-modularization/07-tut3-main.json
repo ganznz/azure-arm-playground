@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "templateUri": {
+            "type": "string"
+        },
+        "templateSas": {
+            "type": "securestring"
+        }
+    },
+    "functions": [],
+    "variables": {
+        "exampleVar": "from Parent"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-07-01",
+            "name": "linkTemplate",
+            "properties": {
+                "mode": "Incremental",
+                "parameters": {
+                    "parentVar": {
+                        "value": "[variables('exampleVar')]"
+                    }
+                },
+                /*
+					linked template
+				*/
+                "templateLink": {
+                    "uri": "[concat(parameters('templateUri'), '?', parameters('templateSas'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "result": {
+            "type": "string",
+            "value": "[reference('nestedTemplate').outputs.result.value]"
+        },
+        "resultParent": {
+            "type": "string",
+            "value": "[reference('nestedTemplate').outputs.resultParent.value]"
+        }
+    }
+}
