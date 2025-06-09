@@ -1,0 +1,56 @@
+/*
+	template that outputs properties of a nested resource
+*/
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2024-07-01",
+            "name": "nestedTemplate",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {},
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {
+                        "storageName": "[concat('stor', uniqueString(resourceGroup().id))]"
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2024-01-01",
+                            "name": "[variables('storageName')]",
+                            "location": "[resourceGroup().location]",
+                            "kind": "StorageV2",
+                            "sku": {
+                                "name": "Standard_LRS"
+                            }
+                        }
+                    ],
+                    "outputs": {
+                        "storageUri": {
+                            "type": "string",
+                            "value": "[reference(variables('storageName')).primaryEndpoints.blob]"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "storageUri": {
+            "type": "string",
+            "value": "[reference('nestedTemplate').outputs.storageUri.value]"
+        }
+    }
+}
